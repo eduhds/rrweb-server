@@ -7,33 +7,33 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    const int PORT = 21543;
-    const string HOST = "0.0.0.0";
-    httplib::Server svr;
+  const int PORT = 21543;
+  const string HOST = "0.0.0.0";
+  httplib::Server svr;
 
-    svr.set_error_handler([](const auto &req, auto &res)
-                          {
+  svr.set_error_handler([](const auto &req, auto &res)
+                        {
         auto fmt = "<p>Error Status: <span style='color:red;'>%d</span></p>";
         char buf[BUFSIZ];
         snprintf(buf, sizeof(buf), fmt, res.status);
         res.set_content(buf, "text/html"); });
 
-    svr.set_default_headers({{"Access-Control-Allow-Origin", "*"},
-                             {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
-                             {"Access-Control-Allow-Headers", "*"}});
+  svr.set_default_headers({{"Access-Control-Allow-Origin", "*"},
+                           {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
+                           {"Access-Control-Allow-Headers", "*"}});
 
-    // Mount /public to ./ directory
-    auto ret = svr.set_mount_point("/public", "./");
-    if (!ret)
-    {
-        cerr << "Failed to set mount point" << endl;
-        return 1;
-    }
+  // Mount /public to ./ directory
+  auto ret = svr.set_mount_point("/public", "./");
+  if (!ret)
+  {
+    cerr << "Failed to set mount point" << endl;
+    return 1;
+  }
 
-    svr.Options("(.*)", [](const httplib::Request &req, httplib::Response &res) {});
+  svr.Options("(.*)", [](const httplib::Request &req, httplib::Response &res) {});
 
-    svr.Post("/record", [](const httplib::Request &req, httplib::Response &res)
-             { 
+  svr.Post("/record", [](const httplib::Request &req, httplib::Response &res)
+           { 
                 string recordFileName = "rrweb_" + to_string(time(NULL)) + ".json";
         ofstream jsonFile;
         jsonFile.open (recordFileName);
@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
         
         res.set_content(recordFileName, "text/plain"); });
 
-    svr.Get("/replay", [](const httplib::Request &req, httplib::Response &res)
-            {
+  svr.Get("/replay", [](const httplib::Request &req, httplib::Response &res)
+          {
                 string html = R"(
 <!DOCTYPE html>
 <html>
@@ -123,9 +123,11 @@ int main(int argc, char *argv[])
 </html>)";
                 res.set_content(html, "text/html"); });
 
-    cout << "Server listening on http://" << HOST << ":" << PORT << endl;
+  cout << "Server listening on http://" << HOST << ":" << PORT << endl;
+  cout << "POST /record to record" << endl;
+  cout << "GET /replay to replay" << endl;
 
-    svr.listen(HOST, PORT);
+  svr.listen(HOST, PORT);
 
-    return 0;
+  return 0;
 }

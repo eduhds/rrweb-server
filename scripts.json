@@ -1,9 +1,12 @@
 {
+  "jnss": "https://github.com/eduhds/JsonScripts",
   "version": 1,
-  "variables": {},
+  "variables": {
+    "app": "rrweb-server"
+  },
   "scripts": {
-    "run": "g++ main.cpp -o rrweb-server && ./rrweb-server",
-    "build": "cosmoc++ main.cpp -o rrweb-server.com",
-    "start": "./rrweb-server.com"
+    "run": "g++ main.cpp -o {{app}} && ./{{app}}",
+    "build": "cosmoc++ main.cpp -o {{app}}.com",
+    "start": "./{{app}}.com"
   }
 }
