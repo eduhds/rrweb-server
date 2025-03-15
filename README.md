@@ -4,6 +4,8 @@
 
 Simple server to save (record) and view (replay) [rrweb](https://github.com/rrweb-io/rrweb) session events.
 
+> Designated for testing purposes.
+
 ## Usage
 
 Download binary executable from [Releases](https://github.com/eduhds/rrweb-server/releases), which was built with [Cosmopolitan Libc](https://github.com/jart/cosmopolitan) and should work on many systems.
