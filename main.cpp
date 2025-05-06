@@ -3,6 +3,8 @@
 
 #include "./httplib.h"
 
+#define VERSION "0.0.2"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -18,10 +20,6 @@ int main(int argc, char *argv[])
         snprintf(buf, sizeof(buf), fmt, res.status);
         res.set_content(buf, "text/html"); });
 
-  svr.set_default_headers({{"Access-Control-Allow-Origin", "*"},
-                           {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
-                           {"Access-Control-Allow-Headers", "*"}});
-
   // Mount /public to ./ directory
   auto ret = svr.set_mount_point("/public", "./");
   if (!ret)
@@ -30,17 +28,35 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  svr.Options("(.*)", [](const httplib::Request &req, httplib::Response &res) {});
+  svr.Options("(.*)", [](const httplib::Request &req, httplib::Response &res)
+              {
+                // Cors
+                res.set_header("Access-Control-Allow-Headers", "*");
+                res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                res.set_header("Access-Control-Allow-Origin", req.headers.find("Origin")->second); });
 
   svr.Post("/record", [](const httplib::Request &req, httplib::Response &res)
            { 
+             // Cors
+             res.set_header("Access-Control-Allow-Headers", "*");
+             res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+             res.set_header("Access-Control-Allow-Origin", req.headers.find("Origin")->second);
+             
+             try
+             {
                 string recordFileName = "rrweb_" + to_string(time(NULL)) + ".json";
-        ofstream jsonFile;
-        jsonFile.open (recordFileName);
-        jsonFile << req.body << "\n";
-        jsonFile.close();
-        
-        res.set_content(recordFileName, "text/plain"); });
+                ofstream jsonFile;
+                jsonFile.open (recordFileName);
+                jsonFile << req.body << "\n";
+                jsonFile.close();              
+
+                res.set_content(recordFileName, "text/plain");
+              }
+              catch(const exception& e)
+              {
+                cerr << e.what() << '\n';
+                res.set_content("Something went wrong", "text/plain");
+              } });
 
   svr.Get("/replay", [](const httplib::Request &req, httplib::Response &res)
           {
@@ -123,9 +139,13 @@ int main(int argc, char *argv[])
 </html>)";
                 res.set_content(html, "text/html"); });
 
-  cout << "Server listening on http://" << HOST << ":" << PORT << endl;
-  cout << "POST /record to record" << endl;
-  cout << "GET /replay to replay" << endl;
+  cout << "rrweb-server v" << VERSION << endl;
+
+  cout << "\nSave as a .json file:" << endl;
+  cout << "POST http://" << HOST << ":" << PORT << "/record" << endl;
+
+  cout << "\nView a .json file:" << endl;
+  cout << "GET http://" << HOST << ":" << PORT << "/replay" << endl;
 
   svr.listen(HOST, PORT);
 
